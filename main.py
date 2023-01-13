@@ -15,9 +15,8 @@ def initialize():
         with open("logins.csv", newline = "") as logins_file:
             csv_reader = csv.reader(logins_file, delimiter = ",")
             for ele in csv_reader: logins_dict[ele[0]] = ele[1]
-    except Exception as e:
-        print(e)
-        input(logins_file_err_msg)
+    except Exception as load_logins_e:
+        input(f"{load_logins_e}\n\nlogins_file_err_msg")
         sys.exit()
 
     # There should be an even number of elements (username and password combinations)
