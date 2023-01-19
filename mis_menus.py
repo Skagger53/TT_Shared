@@ -14,17 +14,19 @@ from data_validation import DataValidation
 
 # Main menu class
 class MN_ITS_Menu():
-    def __init__(self, username, password):
+    def __init__(self, username, password, settings_mnits):
         # MN-ITS login information
         self.mn_its_username = username
         self.mn_its_password = password
+
+        self.settings_mnits = settings_mnits
 
         if "mskaggs" not in self.mn_its_username and "ktrucco" not in self.mn_its_username:
             input("This program is not licensed for you to use.\n\nPlease contact Matt Skaggs (matt.reword@gmail.com) if you would like to license this software.\n\nPress Enter to close.\n")
             return
 
         # MN-ITS eligibility query page
-        self.query_url = "https://mn-its.dhs.state.mn.us/pr/trans/elig/eligrequest"
+        self.query_url = self.settings_mnits["url_mnits"]
 
         # Sets all variables used to submit a query to None
         self.setup_submission_vars()
@@ -63,9 +65,9 @@ class MN_ITS_Menu():
         if self.driver.get_url(self.driver.main_win_handle, "https://mn-its.dhs.state.mn.us/gatewayweb/login", fail_msg = "Attempt login again?\n\nPress Enter.\n") == False: return
         username_login = self.driver.find_ele(
             self.driver.main_win_handle,
-            "id",
-            "userid",
-            "MN-ITS username login field. Is the site down or are you already logged in?"
+            self.settings_mnits["ele_username"][0],
+            self.settings_mnits["ele_username"][1],
+            self.settings_mnits["ele_username"][2]
         )
         if username_login == False: return
 
@@ -78,9 +80,9 @@ class MN_ITS_Menu():
         ) == False: return
         password_login = self.driver.find_ele(
             self.driver.main_win_handle,
-            "id",
-            "password",
-            "MN-ITS password field."
+            self.settings_mnits["ele_password"][0],
+            self.settings_mnits["ele_password"][1],
+            self.settings_mnits["ele_password"][2]
         )
         if password_login == False: return
         if self.driver.enter_text_ele(
@@ -99,9 +101,9 @@ class MN_ITS_Menu():
         # After login, checks to see if the user is at the "home"/main page for logged-in users. Looks for the "MN-ITS" drop-down menu button in the left navigation pane.
         if self.driver.find_ele(
                 self.driver.main_win_handle,
-                "id",
-                "mnitsId",
-                "MN-ITS home page (after login). Is the site down?",
+                self.settings_mnits["ele_validation_item"][0],
+                self.settings_mnits["ele_validation_item"][1],
+                self.settings_mnits["ele_validation_item"][2],
                 wait_time = 10
         ) == False: return
 
@@ -290,18 +292,18 @@ class MN_ITS_Menu():
         # Need an element to click, mainly for DOB below, since a date selector pop-up appears and needs to be removed to ensure no accidental clicks or blocked clicks. The H5 element selection for this is arbitrary.
         click_me = self.driver.find_ele(
             self.driver.main_win_handle,
-            "tag_name",
-            "h5",
-            "MN-ITS eligibility query page H5 tag (page title beginning 'Minnesota Department of...'). Is the MN-ITS query page open?"
+            self.settings_mnits["ele_clickable"][0],
+            self.settings_mnits["ele_clickable"][1],
+            self.settings_mnits["ele_clickable"][2]
         )
         if click_me == False: return
 
         # Lookup button (to select facility in Provider Address)
         lookup_button = self.driver.find_ele(
             self.driver.main_win_handle,
-            "xpath",
-            "/html/body/div[3]/div[3]/div[1]/form/table/tbody/tr[4]/td[2]/table/tbody/tr/td[2]/input",
-            "MN-ITS eligibility query page Lookup button.",
+            self.settings_mnits["ele_lookup_button"][0],
+            self.settings_mnits["ele_lookup_button"][1],
+            self.settings_mnits["ele_lookup_button"][2],
             wait_time = 10
         )
         if lookup_button == False: return
@@ -315,9 +317,9 @@ class MN_ITS_Menu():
         lookup_popup_win = self.driver.driver.window_handles[-1]
         radio_button_eac = self.driver.find_ele(
             lookup_popup_win,
-            "xpath",
-            "/html/body/div/div[3]/div[2]/div[2]/div/table/tbody/tr/td[1]/input",
-            "facility radio button selection in MN-ITS query pop-out window (from Lookup button)."
+            self.settings_mnits["ele_fac_radio"][0],
+            self.settings_mnits["ele_fac_radio"][1],
+            self.settings_mnits["ele_fac_radio"][2]
         )
         if radio_button_eac == False: return
         if self.driver.click_ele(
@@ -327,9 +329,9 @@ class MN_ITS_Menu():
         ) == False: return
         npi_select_submit_btn = self.driver.find_ele(
             lookup_popup_win,
-            "id",
-            "submitButton",
-            "Submit button in MN-ITS query pop-out window (from Lookup button)."
+            self.settings_mnits["ele_submit_button"][0],
+            self.settings_mnits["ele_submit_button"][1],
+            self.settings_mnits["ele_submit_button"][2]
         )
         if self.driver.click_ele(
                 lookup_popup_win,
@@ -340,9 +342,9 @@ class MN_ITS_Menu():
         # Taxonomy Code Qualifier drop-down menu
         code_qualifier_dropdown = self.driver.find_ele(
             self.driver.main_win_handle,
-            "xpath",
-            "/html/body/div[3]/div[3]/div[1]/form/table/tbody/tr[6]/td[2]/div/button/div/div/div",
-            "MN-ITS eligibility query page Taxonomy Code Qualifier drop-down menu."
+            self.settings_mnits["ele_taxon_code"][0],
+            self.settings_mnits["ele_taxon_code"][1],
+            self.settings_mnits["ele_taxon_code"][2]
         )
         if code_qualifier_dropdown == False: return
         if self.driver.click_ele(
@@ -353,9 +355,9 @@ class MN_ITS_Menu():
         sleep(0.5)
         ad_admitting_opt = self.driver.find_ele(
             self.driver.main_win_handle,
-            "xpath",
-            "/html/body/div[3]/div[3]/div[1]/form/table/tbody/tr[6]/td[2]/div/div/div/ul/li[2]",
-            "MN-ITS eligibility query page AD Admitting option from Taxonomy Code Qualifier drop-down menu."
+            self.settings_mnits["ele_taxon_ad"][0],
+            self.settings_mnits["ele_taxon_ad"][1],
+            self.settings_mnits["ele_taxon_ad"][2]
         )
         if ad_admitting_opt == False: return
         if self.driver.click_ele(
@@ -407,9 +409,9 @@ class MN_ITS_Menu():
         # Clicks Submit button, informs user, waits for Enter press.
         submit_btn = self.driver.find_ele(
             self.driver.main_win_handle,
-            "xpath",
-            "/html/body/div[3]/div[3]/div[1]/form/table/tbody/tr[26]/td/input[1]",
-            "MN-ITS eligibility query page Submit button."
+            self.settings_mnits["ele_submit"][0],
+            self.settings_mnits["ele_submit"][1],
+            self.settings_mnits["ele_submit"][2]
         )
         if submit_btn == False: return
         if self.driver.click_ele(

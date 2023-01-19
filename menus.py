@@ -15,9 +15,18 @@ from background_check import BackgroundCheck
 # This class displays all menus the user will navigate
 # Different menus are all different methods, despite being very similar. Using one method with parameters to accommodate all menus won't work with the menu dictionaries; this results in circular references.
 class Menus:
-    def __init__(self, logins_dict):
+    def __init__(self,
+                 logins_dict,
+                 webdriver_settings_pcc,
+                 settings_background_check,
+                 settings_mnits
+                 ):
         self.logins_dict = logins_dict
-        self.pcc_interact = PccInteract(self.logins_dict["PCC_USERNAME"], self.logins_dict["PCC_PASSWORD"])
+
+        self.settings_background_check = settings_background_check
+        self.settings_mnits = settings_mnits
+
+        self.pcc_interact = PccInteract(self.logins_dict["PCC_USERNAME"], self.logins_dict["PCC_PASSWORD"], webdriver_settings_pcc)
         self.pcc_interact.pcc_login()
 
         self.data_validation = DataValidation()
@@ -195,7 +204,7 @@ class Menus:
         return True
 
     def mn_its_in_secs(self):
-        self.mis_main_menu = MN_ITS_Menu(self.logins_dict["MNITS_USERNAME"], self.logins_dict["MNITS_PASSWORD"])
+        self.mis_main_menu = MN_ITS_Menu(self.logins_dict["MNITS_USERNAME"], self.logins_dict["MNITS_PASSWORD"], self.settings_mnits)
         self.main_menu()
 
     # Sets up (pre-fills) three background checks
@@ -235,7 +244,7 @@ class Menus:
             bg_check[ele] = user_input
 
         # Starts a new webdriver for the background check
-        self.background_checker = BackgroundCheck()
+        self.background_checker = BackgroundCheck(self.settings_background_check)
 
         self.background_checker.mpch_search(bg_check["First name"], bg_check["Last name"], bg_check["DOB"])
         self.background_checker.nsopw_search(bg_check["First name"], bg_check["Last name"])

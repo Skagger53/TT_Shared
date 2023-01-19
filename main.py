@@ -5,10 +5,23 @@ if __name__ != "__main__":
     sys.exit()
 
 import csv
+import json
+
+# Load settings
+try:
+    with open("settings.cfg", "r") as f:
+        settings = json.load(f)
+except:
+    print("ERROR LOADING SETTINGS FILE\n\nSettings file is missing or corrupt. Contact Matt.\n\nTruckin' Trucco will not function without a valid settings file.\n\nPress Enter to exit.\n")
+    sys.exit()
+# Assign webdriver_settings_pcc, settings_background_check, settings_mnits to variables
+webdriver_settings_pcc = settings["webdriver_settings_pcc"]
+settings_background_check = settings["settings_background_check"]
+settings_mnits = settings["settings_mnits"]
 
 def initialize():
     # Attempts to load logins
-    logins_file_err_msg = "ERROR LOADING USERNAMES AND PASSWORDS\n\nPassword file is missing or corrupt. Contact Matt Skaggs (matt.reword@gmail.com) to resolve this.\n\nTruckin' Trucco will not function without a valid logins file.\n\nPress Enter to exit.\n"
+    logins_file_err_msg = "ERROR LOADING USERNAMES AND PASSWORDS\n\nPassword file is missing or corrupt. Contact Matt.\n\nTruckin' Trucco will not function without a valid logins file.\n\nPress Enter to exit.\n"
 
     logins_dict = {}
     try:
@@ -27,6 +40,6 @@ def initialize():
     from menus import Menus
 
     # Starts up the menu
-    starting_menus = Menus(logins_dict)
+    starting_menus = Menus(logins_dict, webdriver_settings_pcc, settings_background_check, settings_mnits)
 
 initialize()

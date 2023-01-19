@@ -12,11 +12,13 @@ from webdriver_framework import WebdriverMain
 
 # Class for interacting with PCC: logging in, navigating to locations, finding/clicking/entering text on elements, etc.
 class PccInteract:
-    def __init__(self, username, password):
-        self.pcc_login_url = "https://login.pointclickcare.com/home/userLogin.xhtml?_gl=1*1n0q4b8*_ga*MTgzNzMwOTY1Ny4xNjU4ODQzNTI2*_ga_NBXHRQDSJE*MTY2MTE3Nzc1NC4zNi4wLjE2NjExNzc3NTQuNjAuMC4w&_ga=2.234057950.1359605354.1661177755-1837309657.1658843526"
+    def __init__(self, username, password, webdriver_settings_pcc):
+        self.pcc_login_url = webdriver_settings_pcc["pcc_login_url"]
+        #"https://login.pointclickcare.com/home/userLogin.xhtml?_gl=1*1n0q4b8*_ga*MTgzNzMwOTY1Ny4xNjU4ODQzNTI2*_ga_NBXHRQDSJE*MTY2MTE3Nzc1NC4zNi4wLjE2NjExNzc3NTQuNjAuMC4w&_ga=2.234057950.1359605354.1661177755-1837309657.1658843526"
         self.username = username
         self.password = password
-        self.driver = WebdriverMain(window_x = 1200, window_y = 900)
+        self.driver = WebdriverMain(window_x = webdriver_settings_pcc["window_x"], window_y = webdriver_settings_pcc["window_y"])
+        self.webdriver_settings_pcc = webdriver_settings_pcc
 
     # Logs into PCC with above username data
     def pcc_login(self):
@@ -34,15 +36,15 @@ class PccInteract:
 
         username = self.driver.find_ele(
             self.driver.main_win_handle,
-            "id",
-            "username",
-            "username entry"
+            self.webdriver_settings_pcc["username"][0],
+            self.webdriver_settings_pcc["username"][1],
+            self.webdriver_settings_pcc["username"][2]
         )  # Finds username login
         next_button = self.driver.find_ele(
             self.driver.main_win_handle,
-            "id",
-            "id-next",
-            "username entry"
+            self.webdriver_settings_pcc["next_button"][0],
+            self.webdriver_settings_pcc["next_button"][1],
+            self.webdriver_settings_pcc["next_button"][2]
         ) # Finds next button
         if username == False or next_button == False: return False
         if self.driver.enter_text_ele(
@@ -63,9 +65,9 @@ class PccInteract:
 
         password = self.driver.find_ele(
             self.driver.main_win_handle,
-            "id",
-            "password",
-            "password entry"
+            self.webdriver_settings_pcc["password"][0],
+            self.webdriver_settings_pcc["password"][1],
+            self.webdriver_settings_pcc["password"][2]
         ) # Finds password entry
         if password == False: return False
 
@@ -84,9 +86,9 @@ class PccInteract:
         # Check to see if successfully logged in (invalid password, etc.)
         if self.driver.find_ele(
                 self.driver.main_win_handle,
-                "id",
-                "QTF_FacilityMessages",
-                "login page. Invalid credentials or denied PCC connection attempt?"
+                self.webdriver_settings_pcc["login_validation"][0],
+                self.webdriver_settings_pcc["login_validation"][1],
+                self.webdriver_settings_pcc["login_validation"][2]
         ) == False: return False
 
     # Locates the search box. If fails, displays error to user and returns False. If successful, returns the search box webdriver object.
@@ -128,16 +130,16 @@ class PccInteract:
     def run_daily_census_rep(self):
         print("\nAttempting to run Daily Census report...")
 
-        if self.driver.get_url(self.driver.main_win_handle, "https://www24.pointclickcare.com/enterprisereporting/setup.xhtml?reportId=1014") == False: return
+        if self.driver.get_url(self.driver.main_win_handle, self.webdriver_settings_pcc["url_daily_census"]) == False: return
 
         # When the report is run the first time, no problems. When run again, without a delay, an error is thrown ("element click intercepted...is not clickable...Other element would receive the click"). Never quite figured out why, so this delay is for running the report again.
         sleep(1)
 
         run_button = self.driver.find_ele(
             self.driver.main_win_handle,
-            "xpath",
-            "/html/body/div[2]/div[2]/div/div[1]/div/div/div[1]/div[4]/button[1]",
-            f"Daily Census run report button. Report will not be run."
+            self.webdriver_settings_pcc["ele_daily_census_run_report"][0],
+            self.webdriver_settings_pcc["ele_daily_census_run_report"][1],
+            self.webdriver_settings_pcc["ele_daily_census_run_report"][2]
         )
         if run_button == False: return False
         if self.driver.click_ele(
@@ -158,16 +160,16 @@ class PccInteract:
 
         if self.driver.get_url(
                 self.driver.main_win_handle,
-                "https://www24.pointclickcare.com/enterprisereporting/setup.xhtml?reportId=2024"
+                self.webdriver_settings_pcc["url_24_72_report"]
         ) == False: return False
 
         if rep_24_or_72 == None:
             if datetime.datetime.now().weekday() == 0:
                 last_72_hours_button = self.driver.find_ele(
                     self.driver.main_win_handle,
-                    "xpath",
-                    "/html/body/div[2]/div[2]/div/div[2]/div/div[5]/div[1]/label[3]/span[4]",
-                    "Last 72 hours radio button"
+                    self.webdriver_settings_pcc["ele_72_report_radio"][0],
+                    self.webdriver_settings_pcc["ele_72_report_radio"][1],
+                    self.webdriver_settings_pcc["ele_72_report_radio"][2]
                 )
                 if last_72_hours_button == False: return False
                 if self.driver.click_ele(
@@ -178,9 +180,9 @@ class PccInteract:
             else:
                 last_24_hours_button = self.driver.find_ele(
                     self.driver.main_win_handle,
-                    "xpath",
-                    "/html/body/div[2]/div[2]/div/div[2]/div/div[5]/div[1]/label[2]/span[4]",
-                    "Last 24 hours radio button"
+                    self.webdriver_settings_pcc["ele_24_report_radio"][0],
+                    self.webdriver_settings_pcc["ele_24_report_radio"][1],
+                    self.webdriver_settings_pcc["ele_24_report_radio"][2]
                 )
                 if last_24_hours_button == False: return False
                 if self.driver.click_ele(
@@ -191,9 +193,9 @@ class PccInteract:
         elif rep_24_or_72 == "24":
             last_24_hours_button = self.driver.find_ele(
                 self.driver.main_win_handle,
-                "xpath",
-                "/html/body/div[2]/div[2]/div/div[2]/div/div[5]/div[1]/label[2]/span[4]",
-                "Last 24 hours radio button"
+                self.webdriver_settings_pcc["ele_24_report_radio"][0],
+                self.webdriver_settings_pcc["ele_24_report_radio"][1],
+                self.webdriver_settings_pcc["ele_24_report_radio"][2]
             )
             if last_24_hours_button == False: return False
             if self.driver.click_ele(
@@ -204,9 +206,9 @@ class PccInteract:
         else:
             last_72_hours_button = self.driver.find_ele(
                 self.driver.main_win_handle,
-                "xpath",
-                "/html/body/div[2]/div[2]/div/div[2]/div/div[5]/div[1]/label[3]/span[4]",
-                "Last 72 hours radio button"
+                self.webdriver_settings_pcc["ele_72_report_radio"][0],
+                self.webdriver_settings_pcc["ele_72_report_radio"][1],
+                self.webdriver_settings_pcc["ele_72_report_radio"][2]
             )
             if last_72_hours_button == False: return False
             if self.driver.click_ele(
@@ -217,9 +219,9 @@ class PccInteract:
 
         run_now_button = self.driver.find_ele(
             self.driver.main_win_handle,
-            "xpath",
-            "/html/body/div[2]/div[2]/div/div[1]/div/div/div[1]/div[4]/button[1]/span",
-            "RUN NOW button"
+            self.webdriver_settings_pcc["ele_24_72_report_run_now_button"][0],
+            self.webdriver_settings_pcc["ele_24_72_report_run_now_button"][1],
+            self.webdriver_settings_pcc["ele_24_72_report_run_now_button"][2]
         )
         if run_now_button == False: return False
         if self.driver.click_ele(
@@ -233,14 +235,14 @@ class PccInteract:
 
         if self.driver.get_url(
                 self.driver.main_win_handle,
-                "https://www24.pointclickcare.com/care/reports/rp_censuscasemix.jsp"
+                self.webdriver_settings_pcc["url_case_mix_detail"]
         ) == False: return False
 
         run_report_button = self.driver.find_ele(
             self.driver.main_win_handle,
-            "id",
-            "runButton",
-            "Run Report button"
+            self.webdriver_settings_pcc["ele_case_mix_detail_run_button"][0],
+            self.webdriver_settings_pcc["ele_case_mix_detail_run_button"][1],
+            self.webdriver_settings_pcc["ele_case_mix_detail_run_button"][2]
         )
         if run_report_button == False: return False
         if self.driver.click_ele(
@@ -254,4 +256,8 @@ class PccInteract:
     def clear_console(self):
         self.driver.clear_console()
         print(logo)
-        print("********************************************************************************\n**********************************BETA VERSION**********************************\n********************************************************************************\n")
+        print(
+            "********************************************************************************\n"
+            "**********************************BETA VERSION**********************************\n"
+            "********************************************************************************\n"
+        )
